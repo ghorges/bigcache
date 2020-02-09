@@ -21,7 +21,7 @@ var (
 	errIndexMoreThanSize = &queueError{error: "index more than size"}
 )
 
-type queue struct {
+type Queue struct {
 	data         []byte
 	head         int
 	tail         int
@@ -36,8 +36,8 @@ type queueError struct {
 	error string
 }
 
-func NewBytesQueue(initDataSize int) *queue {
-	return &queue{
+func NewBytesQueue(initDataSize int) *Queue {
+	return &Queue{
 		data:         make([]byte, initDataSize),
 		head:         leftMargin,
 		tail:         leftMargin,
@@ -49,7 +49,7 @@ func NewBytesQueue(initDataSize int) *queue {
 	}
 }
 
-func (q *queue) Push(wrap []byte) int {
+func (q *Queue) Push(wrap []byte) int {
 	dataLen := len(wrap)
 
 	if q.afterTailSpace() < dataLen+headEntrySize {
@@ -67,7 +67,7 @@ func (q *queue) Push(wrap []byte) int {
 	return index
 }
 
-func (q *queue) Pop() ([]byte, error) {
+func (q *Queue) Pop() ([]byte, error) {
 	data, len, err := q.peek(q.head)
 
 	if err != nil {
@@ -88,7 +88,7 @@ func (q *queue) Pop() ([]byte, error) {
 	return data, nil
 }
 
-func (q *queue) checkOut(index int) error {
+func (q *Queue) checkOut(index int) error {
 
 	if q.count == 0 {
 		return errEmptyQueue
@@ -106,17 +106,17 @@ func (q *queue) checkOut(index int) error {
 }
 
 // return head entry
-func (q *queue) Peek() ([]byte, error) {
+func (q *Queue) Peek() ([]byte, error) {
 	data, _, err := q.peek(q.head)
 	return data, err
 }
 
-func (q *queue) Get(index int) ([]byte, error) {
+func (q *Queue) Get(index int) ([]byte, error) {
 	data, _, err := q.peek(index)
 	return data, err
 }
 
-func (q *queue) peek(index int) ([]byte, int, error) {
+func (q *Queue) peek(index int) ([]byte, int, error) {
 	err := q.checkOut(index)
 	if err != nil {
 		return nil, 0, err
@@ -126,7 +126,7 @@ func (q *queue) peek(index int) ([]byte, int, error) {
 	return q.data[index+headEntrySize : index+headEntrySize+int(len)], int(len), nil
 }
 
-func (q *queue) allocMemory(len int) {
+func (q *Queue) allocMemory(len int) {
 	start := time.Now()
 
 	if q.cap < len {
@@ -149,7 +149,7 @@ func (q *queue) allocMemory(len int) {
 	log.Info("alloc in ", time.Since(start), " cap is ", q.cap)
 }
 
-func (q *queue) push(data []byte, len int) {
+func (q *Queue) push(data []byte, len int) {
 	binary.LittleEndian.PutUint32(q.headByte, uint32(len))
 
 	copy(q.data[q.tail:], q.headByte[:headEntrySize])
@@ -164,20 +164,21 @@ func (q *queue) push(data []byte, len int) {
 	q.count++
 }
 
-func (q *queue) afterTailSpace() int {
+func (q *Queue) afterTailSpace() int {
 	if q.tail >= q.head {
 		return q.cap - q.tail
 	}
 	return q.head - q.tail - emptyBlob
 }
 
-func (q *queue) beforeHeadSpace() int {
+func (q *Queue) beforeHeadSpace() int {
 	if q.tail >= q.head {
 		return q.head - leftMargin - emptyBlob
 	}
 	return q.head - q.tail - emptyBlob
 }
 
+// write error interface
 func (err *queueError) Error() string {
 	return err.error
 }

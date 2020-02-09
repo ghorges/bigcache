@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"testing"
 )
+func Printqueuedata(q *Queue) {
 
-func Printqueuedata(q *queue) {
 	fmt.Println("head = " + strconv.Itoa(q.head) +
 		"   tail = " + strconv.Itoa(q.tail) +
 		"  rightMargin = " + strconv.Itoa(q.rightMargin) +

@@ -1,6 +1,8 @@
 package bigcache
 
-import "time"
+import (
+	"time"
+)
 
 type BigCache struct {
 	shards      []*cacheShard
@@ -16,6 +18,10 @@ type onRemoveCallback func(wrappedEntry []byte, reason string)
 
 func NewBigCache(shardSize int, lifeWindow time.Duration, cleanWindow time.Duration, onRemove onRemoveCallback, initSize int) *BigCache {
 	return newBigCache(shardSize, lifeWindow, cleanWindow, onRemove, initSize)
+}
+
+func DefaultBigCache() *BigCache {
+	return newBigCache(1024, 10*time.Minute, 5*time.Minute, removeCall, 100)
 }
 
 func newBigCache(shardSize int, lifeWindow time.Duration, cleanWindow time.Duration, onRemove onRemoveCallback, initSize int) *BigCache {
@@ -82,4 +88,7 @@ func (cache *BigCache) cleanUp(currentTimestamp int64) {
 
 func (cache *BigCache) getShard(hashKey uint64) *cacheShard {
 	return cache.shards[hashKey&cache.shardMask]
+}
+
+func removeCall(wrappedEntry []byte, reason string) {
 }

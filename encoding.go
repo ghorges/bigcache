@@ -1,6 +1,9 @@
 package bigcache
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+	"fmt"
+)
 
 const (
 	timestampSize = 8
@@ -13,7 +16,7 @@ func wrapEntry(timestamp int64, hash uint64, key string, entry []byte, buffer *[
 	lenKey := len(key)
 	// lenData := len(entry)	just use once,so don't use it.
 	entryLen := headSize + lenKey + len(entry)
-	if  entryLen < cap(*buffer) {
+	if entryLen > cap(*buffer) {
 		*buffer = make([]byte, entryLen)
 	}
 
@@ -27,19 +30,36 @@ func wrapEntry(timestamp int64, hash uint64, key string, entry []byte, buffer *[
 	copy(blob[headSize:], key)
 	copy(blob[headSize+lenKey:], entry)
 
+	fmt.Println("2222")
 	return blob[:entryLen]
 }
 
 func readEntry(buffer []byte) []byte {
 	keyLen := binary.LittleEndian.Uint16(buffer[timestampSize+keyHashSize:])
 
-	returnBuffer := make([]byte, len(buffer) - headSize - int(keyLen))
+	returnBuffer := make([]byte, len(buffer)-headSize-int(keyLen))
 	copy(returnBuffer, buffer[headSize+keyLen:])
-
 
 	return returnBuffer
 }
 
 func hashKeyToZero(buffer []byte) {
 	binary.LittleEndian.PutUint64(buffer[timestampSize:], 0)
+}
+
+func getHashKey(buffer []byte) uint64 {
+	return binary.LittleEndian.Uint64(buffer[timestampSize:])
+}
+
+func getKey(buffer []byte) []byte {
+	keyLen := binary.LittleEndian.Uint16(buffer[timestampSize+keyHashSize:])
+
+	returnBuffer := make([]byte, keyLen)
+	copy(returnBuffer, buffer[headSize:])
+
+	return returnBuffer
+}
+
+func readTimestamp(buffer []byte) uint64 {
+	return binary.LittleEndian.Uint64(buffer[0:timestampSize])
 }

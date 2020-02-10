@@ -14,20 +14,21 @@ type BigCache struct {
 
 type onRemoveCallback func(wrappedEntry []byte, reason string)
 
-func NewBigCache(shardSize int, lifeWindow time.Duration, onRemove onRemoveCallback, initSize int) *BigCache {
-	return newBigCache(shardSize, lifeWindow, onRemove, initSize)
+func NewBigCache(shardSize int, lifeWindow time.Duration, cleanWindow time.Duration, onRemove onRemoveCallback, initSize int) *BigCache {
+	return newBigCache(shardSize, lifeWindow, cleanWindow, onRemove, initSize)
 }
 
-func newBigCache(shardSize int, lifeWindow time.Duration, onRemove onRemoveCallback, initSize int) *BigCache {
+func newBigCache(shardSize int, lifeWindow time.Duration, cleanWindow time.Duration, onRemove onRemoveCallback, initSize int) *BigCache {
 	if isPowerOfTwo(shardSize) == false {
 		return nil
 	}
 
 	bigCache := &BigCache{
-		shardSize:  shardSize,
-		lifeWindow: lifeWindow,
-		shardMask:  uint64(shardSize) - 1,
-		OnRemove:   onRemove,
+		shardSize:   shardSize,
+		lifeWindow:  lifeWindow,
+		cleanWindow: cleanWindow,
+		shardMask:   uint64(shardSize) - 1,
+		OnRemove:    onRemove,
 	}
 
 	bigCache.shards = make([]*cacheShard, shardSize)
@@ -65,6 +66,12 @@ func (cache *BigCache) Set(key string, data []byte) error {
 	hashKey := cache.hash.Sum64(key)
 	shard := cache.getShard(hashKey)
 	return shard.set(key, hashKey, data)
+}
+
+func (cache *BigCache) Del(key string) error {
+	hashKey := cache.hash.Sum64(key)
+	shard := cache.getShard(hashKey)
+	return shard.del(hashKey, key)
 }
 
 func (cache *BigCache) cleanUp(currentTimestamp int64) {

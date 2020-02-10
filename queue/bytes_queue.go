@@ -1,7 +1,7 @@
 package queue
 
 import (
-	"code.byted.org/gopkg/pkg/log"
+	"log"
 	"encoding/binary"
 	"time"
 )
@@ -146,7 +146,7 @@ func (q *Queue) allocMemory(len int) {
 		}
 	}
 
-	log.Info("alloc in ", time.Since(start), " cap is ", q.cap)
+	log.Println("alloc in ", time.Since(start), " cap is ", q.cap)
 }
 
 func (q *Queue) push(data []byte, len int) {

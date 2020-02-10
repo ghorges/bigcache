@@ -2,7 +2,6 @@ package bigcache
 
 import (
 	"encoding/binary"
-	"fmt"
 )
 
 const (
@@ -30,7 +29,6 @@ func wrapEntry(timestamp int64, hash uint64, key string, entry []byte, buffer *[
 	copy(blob[headSize:], key)
 	copy(blob[headSize+lenKey:], entry)
 
-	fmt.Println("2222")
 	return blob[:entryLen]
 }
 

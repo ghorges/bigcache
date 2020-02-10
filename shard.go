@@ -7,8 +7,6 @@ import (
 	"time"
 )
 
-type onRemoveCallback func(wrappedEntry []byte, reason string)
-
 type cacheShard struct {
 	hashMap     map[uint64]uint32
 	cache       queue.Queue
@@ -127,6 +125,24 @@ func (s *cacheShard) removeOldestEntry(reason string) error {
 	s.onRemove(data, reason)
 
 	return nil
+}
+
+func (s *cacheShard) cleanUp(currentTimestamp int64) {
+	s.lock.Lock()
+	defer func() {
+		s.lock.Unlock()
+	}()
+
+	for {
+		data, err := s.cache.Peek()
+		if err != nil {
+			return
+		}
+
+		if s.onEvict(data, uint64(currentTimestamp), s.removeOldestEntry) == false {
+			return
+		}
+	}
 }
 
 func initShard(initSize int, lifeWindow int64, callback onRemoveCallback) *cacheShard {

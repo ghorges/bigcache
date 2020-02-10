@@ -4,6 +4,13 @@ import (
 	"encoding/binary"
 )
 
+/*
+storage like this.
+--------------------------------------------------
+|timestampSize|keyHashSize|keySize|keyValue|entry|
+--------------------------------------------------
+ */
+
 const (
 	timestampSize = 8
 	keyHashSize   = 8

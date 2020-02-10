@@ -1,8 +1,8 @@
 package queue
 
 import (
-	"log"
 	"encoding/binary"
+	"log"
 	"time"
 )
 

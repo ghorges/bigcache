@@ -2,9 +2,10 @@ package bigcache_test
 
 import (
 	"fmt"
-	bigcache "github.com/ghorges/mybigcache"
 	"testing"
 	"time"
+
+	bigcache "github.com/ghorges/mybigcache"
 )
 
 func TestBigCacheSet(t *testing.T) {
